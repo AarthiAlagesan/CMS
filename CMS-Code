@@ -1,0 +1,135 @@
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReadWriteLock;
+
+class Article {
+    private StringBuilder content = new StringBuilder();
+
+    public String getContent() {
+        return content.toString();
+    }
+
+    public void appendContent(String newContent) {
+        content.append(newContent);
+    }
+}
+
+class ContentStorage {
+    private final Map<String, Article> articles = new HashMap<>();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    public String readArticle(String title) {
+        lock.readLock().lock();
+        try {
+            Article article = articles.get(title);
+            return article != null ? article.getContent() : "Article not found";
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public void writeArticle(String title, String newContent) {
+        lock.writeLock().lock();
+        try {
+            articles.computeIfAbsent(title, k -> new Article()).appendContent(newContent);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void printAllArticles() {
+        lock.readLock().lock();
+        try {
+            articles.forEach((title, article) -> 
+                System.out.println("Title: " + title + "\nContent: " + article.getContent() + "\n"));
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+}
+
+class ReaderThread extends Thread {
+    private final ContentStorage storage;
+    private final String articleTitle;
+
+    public ReaderThread(ContentStorage storage, String articleTitle) {
+        this.storage = storage;
+        this.articleTitle = articleTitle;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 5; i++) {
+            System.out.println("Reading Article: " + articleTitle);
+            System.out.println(storage.readArticle(articleTitle));
+            try {
+                Thread.sleep(500); // Simulate time taken to read
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+class WriterThread extends Thread {
+    private final ContentStorage storage;
+    private final String articleTitle;
+    private final String contentToWrite;
+
+    public WriterThread(ContentStorage storage, String articleTitle, String contentToWrite) {
+        this.storage = storage;
+        this.articleTitle = articleTitle;
+        this.contentToWrite = contentToWrite;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 5; i++) {
+            System.out.println("Writing to Article: " + articleTitle);
+            storage.writeArticle(articleTitle, contentToWrite);
+            try {
+                Thread.sleep(1000); // Simulate time taken to write
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+public class CMSReaderWriterExample {
+    public static void main(String[] args) {
+        ContentStorage storage = new ContentStorage();
+
+        // Example data
+        String article1Title = "Introduction to Java";
+        String article1Content = "Java is a high-level, class-based, object-oriented programming language. ";
+        String article2Title = "Concurrency in Java";
+        String article2Content = "Concurrency is the ability of a program to perform multiple tasks simultaneously. ";
+
+        // Create reader and writer threads
+        ReaderThread reader1 = new ReaderThread(storage, article1Title);
+        ReaderThread reader2 = new ReaderThread(storage, article2Title);
+        WriterThread writer1 = new WriterThread(storage, article1Title, article1Content);
+        WriterThread writer2 = new WriterThread(storage, article2Title, article2Content);
+
+        // Start threads
+        reader1.start();
+        reader2.start();
+        writer1.start();
+        writer2.start();
+        
+        // Wait for all threads to finish
+        try {
+            reader1.join();
+            reader2.join();
+            writer1.join();
+            writer2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        // Print all articles to show final state
+        System.out.println("\nFinal State of Articles:");
+        storage.printAllArticles();
+    }
+}
