@@ -21,4 +21,5 @@ Content: Concurrency is the ability of a program to perform multiple tasks simul
 
 Title: Introduction to Java
 Content: Java is a high-level, class-based, object-oriented programming language...
-![Screenshot (67)](https://github.com/user-attachments/assets/5c60c42e-f7e3-49fd-9ba2-6f6ab4b41cd4)
+
+![Screenshot (67)](https://github.com/user-attachments/assets/dcc24d17-a693-40a9-ad98-4ee367cf921e)
