@@ -11,6 +11,8 @@ This project demonstrates the **Reader-Writer problem** using **Java concurrency
 - **Writers**: Only one thread can write to an article, and it blocks other readers and writers while writing.
 
 ## Output
+![CMS-OP](https://github.com/user-attachments/assets/2efa7145-aa76-40df-8c30-ea78c796d90e)
+
 
 The program will show reading and writing activities from multiple threads and print the final content of all articles.
 
@@ -21,5 +23,7 @@ Content: Concurrency is the ability of a program to perform multiple tasks simul
 
 Title: Introduction to Java
 Content: Java is a high-level, class-based, object-oriented programming language...
+
+
 
 
